@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Whitney Font - Discord's official font */
+@font-face {
+  font-family: 'Whitney';
+  src: url('https://cdn.skyra.pw/whitney-font/v2/Book.woff') format('woff');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'Whitney';
+  src: url('https://cdn.skyra.pw/whitney-font/v2/Medium.woff') format('woff');
+  font-weight: 500;
+}
+@font-face {
+  font-family: 'Whitney';
+  src: url('https://cdn.skyra.pw/whitney-font/v2/Semibold.woff') format('woff');
+  font-weight: 600;
+}
+@font-face {
+  font-family: 'Whitney';
+  src: url('https://cdn.skyra.pw/whitney-font/v2/Bold.woff') format('woff');
+  font-weight: 700;
+}
+
+:root {
+  /* Discord Dark Theme */
+  --background-tertiary: #202225;
+  --background-secondary: #2f3136;
+  --background-primary: #36393f;
+  --background-floating: #18191c;
+  --input-background: #40444b;
+  --brand-color: #5865f2;
+  --text-normal: #dcddde;
+  --text-muted: #72767d;
+  --header-primary: #ffffff;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-family: Whitney, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* Custom scrollbar - Discord style */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2f3136;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #202225;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #18191c;
+}
+
+/* Code block styling */
+pre {
+  background: #2f3136 !important;
+  border-radius: 4px;
+  padding: 0.75rem;
+  overflow-x: auto;
+  border: 1px solid #202225;
+}
+
+code {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 0.875rem;
+}
+
+/* Prose styles for markdown */
+.prose {
+  color: var(--text-normal);
+}
+
+.prose strong {
+  color: var(--header-primary);
+}
+
+.prose a {
+  color: #00aff4;
+}
+
+.prose code {
+  background: #2f3136;
+  padding: 0.125rem 0.25rem;
+  border-radius: 3px;
+  font-size: 0.85em;
+}
+
+/* Message grouping animation */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-enter {
+  animation: messageSlideIn 0.15s ease-out;
+}
+
+/* Typing indicator animation */
+@keyframes bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px);
+  }
+}
+
+.typing-dot {
+  animation: bounce 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }

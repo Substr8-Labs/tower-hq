@@ -1,0 +1,582 @@
+<project_specification>
+  <project_name>TowerHQ</project_name>
+
+  <overview>
+    TowerHQ is a web chat application that gives solo founders instant access to an AI executive team — a CTO (Ada), CPO (Grace), CMO (Tony), and CFO (Val). Founders often make decisions in isolation without anyone to bounce ideas off. TowerHQ solves this by providing expert personas in dedicated channels who challenge assumptions and help founders think strategically. It's like having a board of advisors on demand. The interface is Discord-inspired but simplified — no voice, no servers, no noise — just focused strategic conversation.
+  </overview>
+
+  <target_audience>
+    Solo founders and early-stage startup teams. Anyone building a company who needs strategic guidance but doesn't have co-founders or advisors yet.
+  </target_audience>
+
+  <technology_stack>
+    <frontend>
+      <framework>Next.js (App Router)</framework>
+      <styling>Tailwind CSS</styling>
+      <theme>Dark mode only (Discord-inspired aesthetic)</theme>
+      <markdown_rendering>Markdown rendering for AI responses with syntax-highlighted code blocks (Prism.js or highlight.js)</markdown_rendering>
+    </frontend>
+    <backend>
+      <runtime>Node.js with Next.js API routes</runtime>
+      <database>PostgreSQL via Prisma ORM</database>
+      <ai_integration>OpenClaw Gateway — external HTTP service handles all LLM calls, persona logic, and context routing. TowerHQ is a thin client that sends messages to OpenClaw and displays responses.</ai_integration>
+    </backend>
+    <communication>
+      <api>REST (Next.js API routes)</api>
+      <ai_requests>Synchronous HTTP POST to OpenClaw Gateway for MVP. Typing indicator shown while request is pending. v2: SSE/WebSocket for true streaming.</ai_requests>
+    </communication>
+    <authentication>
+      <method>Magic link (email-based, passwordless)</method>
+      <session>Long-lived session token (30-day rolling), refresh on activity, no inactivity logout</session>
+    </authentication>
+  </technology_stack>
+
+  <prerequisites>
+    <environment_setup>
+      - Node.js 18+ and npm/pnpm
+      - PostgreSQL database instance
+      - OpenClaw Gateway endpoint (external service, configured via environment variable)
+      - Environment variables: DATABASE_URL, OPENCLAW_GATEWAY_URL, EMAIL_SERVICE_API_KEY (for magic links), SESSION_SECRET
+    </environment_setup>
+  </prerequisites>
+
+  <feature_count>84</feature_count>
+
+  <ai_personas>
+    <persona name="Ada" role="CTO" color="#22c55e" icon="🧠">
+      Technical architecture, code, infrastructure, engineering decisions.
+      Primary responder in #engineering channel.
+    </persona>
+    <persona name="Grace" role="CPO" color="#eab308" icon="🎯">
+      Product strategy, roadmap, features, user research.
+      Primary responder in #product channel.
+    </persona>
+    <persona name="Tony" role="CMO" color="#ec4899" icon="📣">
+      Marketing, growth, messaging, go-to-market strategy.
+      Primary responder in #marketing channel.
+    </persona>
+    <persona name="Val" role="CFO" color="#ef4444" icon="📊">
+      Finance, business model, runway, pricing decisions.
+      Primary responder in #finance channel.
+    </persona>
+
+    <routing_behavior>
+      In #general: System auto-routes to most relevant persona based on message content. No tagging required.
+      In dedicated channels: Primary persona responds. Cross-persona chiming allowed but not required.
+      MVP: One persona responds per message. Multi-persona debates are a v2 feature.
+    </routing_behavior>
+  </ai_personas>
+
+  <channels>
+    <channel slug="general" icon="#" description="General strategic discussion. AI auto-routes to most relevant persona." />
+    <channel slug="engineering" icon="#" primary_persona="Ada" description="Technical architecture, code, infrastructure." />
+    <channel slug="product" icon="#" primary_persona="Grace" description="Product strategy, roadmap, features." />
+    <channel slug="marketing" icon="#" primary_persona="Tony" description="Marketing, growth, go-to-market." />
+    <channel slug="finance" icon="#" primary_persona="Val" description="Finance, business model, pricing." />
+    <channel slug="decisions" icon="📌" description="User-curated decision log. AI helps structure entries." />
+    <note>Fixed set of 6 channels for MVP. No custom channels. Custom channels (e.g., #hiring, #legal) are a v2 feature.</note>
+  </channels>
+
+  <security_and_access_control>
+    <user_roles>
+      <role name="user">
+        <permissions>
+          - Full access to all channels in their own Tower
+          - Send messages, delete own messages
+          - Edit profile and company settings
+          - Export data
+          - Delete account
+        </permissions>
+        <protected_routes>
+          - /app/* (authenticated users only, redirects to landing page if not logged in)
+          - /settings/* (authenticated users only)
+        </protected_routes>
+      </role>
+      <note>Single user per Tower for MVP. No team/admin roles. One founder = one Tower. Multi-user teams are a v2 feature.</note>
+    </user_roles>
+    <authentication>
+      <method>Magic link (email-based, passwordless)</method>
+      <session_timeout>30-day rolling token, refreshed on activity</session_timeout>
+      <password_requirements>N/A — passwordless authentication</password_requirements>
+    </authentication>
+    <sensitive_operations>
+      - Delete account requires typing "DELETE" to confirm
+      - All conversations and data permanently wiped on account deletion
+    </sensitive_operations>
+  </security_and_access_control>
+
+  <core_features>
+    <infrastructure>
+      - Database connection established
+      - Database schema applied correctly
+      - Data persists across server restart
+      - No mock data patterns in codebase
+      - Backend API queries real database
+    </infrastructure>
+
+    <landing_page>
+      - Hero section with headline "Your AI Executive Team", subtitle, and CTA button
+      - Navigation bar with logo, "Login" and "Get Started" buttons
+      - "How It Works" section with 3-step explanation (Create Tower, Meet Team, Get Guidance)
+      - "Meet Your Team" section with 4 persona cards (Ada, Grace, Tony, Val) showing name, role, color, and description
+      - Pricing section ("Free during beta. Early access for founders.")
+      - Footer with links (About, GitHub, Discord Community, Privacy, Terms) and copyright "© 2026 Substr8 Labs"
+      - Responsive layout (works on mobile and desktop)
+      - CTA buttons link to sign-up flow
+    </landing_page>
+
+    <authentication>
+      - Magic link request: user enters email, receives magic link
+      - Magic link validation: clicking link authenticates user
+      - Session creation with 30-day rolling token
+      - Session persistence: stay logged in across visits (refresh on activity)
+      - Sign out functionality (explicit only)
+      - Redirect unauthenticated users to landing page when accessing /app/*
+      - Auth loading states (checking session on page load)
+    </authentication>
+
+    <onboarding>
+      - Company name input (required)
+      - Company description input (optional, "What are you building?")
+      - "Create My Tower" button creates tower + 6 default channels
+      - Welcome modal: "Meet your executive team" with 4 persona cards and descriptions
+      - Dismiss welcome modal → lands in #general channel
+    </onboarding>
+
+    <sidebar_and_navigation>
+      - Channel list rendering (6 channels with icons)
+      - Active channel highlight (visual indicator)
+      - Company name displayed in sidebar header ("Acme Corp HQ")
+      - Settings gear icon in sidebar
+      - User avatar/initials icon in sidebar
+      - Mobile: hamburger menu (☰) in top-left
+      - Mobile: sidebar opens as overlay
+      - Mobile: sidebar closes when channel is selected
+    </sidebar_and_navigation>
+
+    <channel_system>
+      - 6 fixed channels render correctly
+      - Channel URL routing (/app/[channel]) via Next.js App Router
+      - Page refresh stays on current channel
+      - Browser back/forward navigation works between channels
+      - /app redirects to /app/general
+      - Channel-specific empty states with persona-appropriate prompts
+      - Dynamic browser tab title: "#channel | TowerHQ"
+    </channel_system>
+
+    <chat_ui>
+      - Message list rendering (scrollable area)
+      - User messages styled distinctly (right-aligned or different background)
+      - AI messages styled with persona color-coded left border
+      - Persona avatar (initials in colored circle), name, and timestamp on each AI message
+      - Full Markdown rendering in AI responses (bold, italic, lists, headers, links, tables)
+      - Syntax-highlighted code blocks in AI responses
+      - Copy button on code blocks
+      - Auto-scroll to bottom on new message
+      - Load last 50 messages when entering a channel
+      - "Load more" button or infinite scroll for older messages (paginated API)
+    </chat_ui>
+
+    <messaging_and_openclaw>
+      - Send message on Enter key
+      - New line on Shift+Enter
+      - Store user message in database immediately on send
+      - POST to OpenClaw Gateway with message, channel, company context, and conversation history (last N messages)
+      - Store AI response in database when received
+      - Typing indicator: "[Persona] is typing..." with animated dots
+      - Avatar pulse/glow effect while AI is responding
+      - Display AI response with correct persona identity (name, color, avatar)
+    </messaging_and_openclaw>
+
+    <error_handling>
+      - 60-second timeout: show "⚠️ [Persona] couldn't respond. Our systems might be busy — try again." with Retry button
+      - 10-second slow response: show "Still thinking..." under typing indicator
+      - API error: show "⚠️ Something went wrong. Please try again." with Retry button
+      - Network disconnect: yellow banner "⚠️ Connection lost. Reconnecting..."
+      - Auto-reconnect attempt every 5 seconds
+      - Reconnection success: green "✓ Connected" banner briefly, then disappears
+    </error_handling>
+
+    <settings_profile>
+      - Edit display name (defaults to email prefix)
+      - Display email (read-only)
+      - Auto-generated initials-based avatar (colored circle with letters, e.g., "JD")
+      - Save profile changes with confirmation feedback
+    </settings_profile>
+
+    <settings_company>
+      - Edit company name (updates sidebar header)
+      - Edit company context textarea ("Tell your AI team about your company")
+      - Save company changes with confirmation feedback
+    </settings_company>
+
+    <settings_account>
+      - Sign out button
+      - Delete account with "DELETE" confirmation modal
+      - Full data wipe on account deletion (user, tower, all messages)
+    </settings_account>
+
+    <quick_channel_switcher>
+      - Ctrl/Cmd+K opens modal overlay
+      - Search input filters channels as user types (e.g., "eng" → #engineering)
+      - Arrow key navigation through results
+      - Enter to switch to selected channel, Escape to close
+    </quick_channel_switcher>
+
+    <tab_and_focus_behavior>
+      - Dynamic tab title updates when switching channels ("#engineering | TowerHQ")
+      - Notification indicator when tab is backgrounded and AI responds ("● #engineering | TowerHQ")
+      - Indicator clears when user focuses the tab
+    </tab_and_focus_behavior>
+
+    <data_export>
+      - "Export my data" button in Settings → Account
+      - Generates ZIP file: conversations.json (full message history), decisions.md (formatted decisions log), profile.json (user/company info)
+      - Browser download of ZIP file
+    </data_export>
+  </core_features>
+
+  <message_handling>
+    <flow>
+      1. User types message and hits Enter (or Send button)
+      2. Frontend sends POST to /api/channels/:slug/messages
+      3. Backend stores user message in database
+      4. Backend calls OpenClaw Gateway with: message content, channel slug (for persona routing), company context, conversation history (last N messages)
+      5. OpenClaw returns complete AI response (synchronous for MVP)
+      6. Backend stores AI response in database
+      7. Both messages returned to frontend
+      8. Frontend displays user message immediately, shows typing indicator, then displays AI response
+    </flow>
+    <message_actions>
+      - Copy message text (especially useful for code blocks)
+      - Delete own messages (user messages only)
+      - AI messages cannot be deleted (part of the record)
+      - No message editing (messages are immutable)
+      - Bookmark/star is a v2 feature
+    </message_actions>
+    <pagination>
+      - Load last 50 messages per channel on entry
+      - Paginated API with offset/limit for older messages
+      - "Load more" button at top of message list
+    </pagination>
+  </message_handling>
+
+  <empty_states>
+    <channel slug="general">👋 Welcome! Tell your AI team what you're building.</channel>
+    <channel slug="engineering">🧠 Ask Ada about architecture, tech stack, or code.</channel>
+    <channel slug="product">🎯 Ask Grace about features, roadmap, or user research.</channel>
+    <channel slug="marketing">📣 Ask Tony about positioning, growth, or go-to-market.</channel>
+    <channel slug="finance">📊 Ask Val about pricing, runway, or business model.</channel>
+    <channel slug="decisions">📝 Log important decisions here. Your AI team will help you think them through.</channel>
+  </empty_states>
+
+  <database_schema>
+    <tables>
+      <users>
+        - id (UUID, primary key)
+        - email (VARCHAR, unique, not null)
+        - display_name (VARCHAR, nullable, defaults to email prefix)
+        - avatar_url (VARCHAR, nullable)
+        - created_at (TIMESTAMP, default now)
+        - updated_at (TIMESTAMP, default now)
+      </users>
+      <sessions>
+        - id (UUID, primary key)
+        - user_id (UUID, foreign key → users.id, on delete cascade)
+        - token (VARCHAR, unique, not null)
+        - expires_at (TIMESTAMP, not null, 30 days from creation)
+        - created_at (TIMESTAMP, default now)
+      </sessions>
+      <magic_links>
+        - id (UUID, primary key)
+        - email (VARCHAR, not null)
+        - token (VARCHAR, unique, not null)
+        - expires_at (TIMESTAMP, not null, 15 minutes from creation)
+        - used (BOOLEAN, default false)
+        - created_at (TIMESTAMP, default now)
+      </magic_links>
+      <towers>
+        - id (UUID, primary key)
+        - user_id (UUID, foreign key → users.id, unique, on delete cascade)
+        - company_name (VARCHAR, not null)
+        - company_context (TEXT, nullable)
+        - created_at (TIMESTAMP, default now)
+        - updated_at (TIMESTAMP, default now)
+      </towers>
+      <channels>
+        - id (UUID, primary key)
+        - tower_id (UUID, foreign key → towers.id, on delete cascade)
+        - name (VARCHAR, not null, e.g., "general")
+        - slug (VARCHAR, not null, e.g., "general")
+        - is_decisions_channel (BOOLEAN, default false)
+        - sort_order (INTEGER, not null)
+        - created_at (TIMESTAMP, default now)
+      </channels>
+      <messages>
+        - id (UUID, primary key)
+        - channel_id (UUID, foreign key → channels.id, on delete cascade)
+        - role (VARCHAR, not null, enum: "user" | "assistant")
+        - persona (VARCHAR, nullable, e.g., "ada", "grace", "tony", "val" — null for user messages)
+        - content (TEXT, not null)
+        - metadata (JSONB, nullable — for token counts, model info, debugging)
+        - created_at (TIMESTAMP, default now)
+      </messages>
+    </tables>
+    <indexes>
+      - messages: (channel_id, created_at DESC) for fast message loading
+      - sessions: (token) for fast session lookup
+      - magic_links: (token) for fast magic link lookup
+      - channels: (tower_id, slug) unique constraint
+      - users: (email) unique constraint
+    </indexes>
+  </database_schema>
+
+  <api_endpoints_summary>
+    <health>
+      - GET /api/health — Health check with database status
+    </health>
+    <auth>
+      - POST /api/auth/magic-link — Request magic link (send email)
+      - GET /api/auth/verify?token=xxx — Verify magic link, create session
+      - POST /api/auth/logout — Destroy session
+      - GET /api/auth/me — Get current user (session validation)
+    </auth>
+    <onboarding>
+      - POST /api/towers — Create tower with company name/context + 6 default channels
+    </onboarding>
+    <channels>
+      - GET /api/towers/:towerId/channels — List all channels for a tower
+    </channels>
+    <messages>
+      - GET /api/channels/:slug/messages?limit=50&offset=0 — Get paginated messages
+      - POST /api/channels/:slug/messages — Send message (stores user msg, calls OpenClaw, stores response, returns both)
+      - DELETE /api/messages/:id — Delete own message
+    </messages>
+    <user>
+      - PATCH /api/users/me — Update display name
+      - GET /api/users/me — Get current user profile
+    </user>
+    <tower>
+      - PATCH /api/towers/:id — Update company name/context
+      - GET /api/towers/mine — Get current user's tower
+    </tower>
+    <account>
+      - DELETE /api/users/me — Delete account (requires "DELETE" confirmation in body)
+    </account>
+    <export>
+      - GET /api/export — Generate and download data export ZIP
+    </export>
+  </api_endpoints_summary>
+
+  <ui_layout>
+    <main_structure>
+      Discord-style three-area layout:
+      1. Left sidebar (fixed width ~240px): Company name header, channel list, settings/user icons at bottom
+      2. Center content area (flex-grow): Channel header with name, scrollable message list, input bar at bottom
+      3. No right panel for MVP
+
+      Mobile (≤768px): Sidebar hidden by default, hamburger menu opens it as overlay, closes on channel select.
+      Desktop (>768px): Sidebar always visible.
+    </main_structure>
+
+    <pages>
+      - / — Landing page (public)
+      - /login — Magic link request form
+      - /auth/verify — Magic link verification handler
+      - /onboarding — Company name + description input, "Create My Tower"
+      - /app — Redirects to /app/general
+      - /app/[channel] — Main chat interface (authenticated)
+      - /settings — Settings page with Profile, Company, Account sections
+    </pages>
+
+    <components>
+      - components/landing/ — Hero, HowItWorks, MeetTheTeam, Pricing, Footer
+      - components/layout/ — Sidebar, ChannelList, ChatArea, MessageInput
+      - components/chat/ — MessageBubble, TypingIndicator, EmptyState, LoadMore
+      - components/settings/ — ProfileForm, CompanyForm, AccountActions, ExportButton
+      - components/modals/ — WelcomeModal, DeleteConfirmModal, ChannelSwitcher
+      - components/common/ — Button, Input, Modal, Avatar, Spinner, Banner
+    </components>
+  </ui_layout>
+
+  <design_system>
+    <color_palette>
+      - Background (primary): #1a1a2e or similar deep dark blue/gray (Discord-like)
+      - Background (sidebar): slightly darker than primary
+      - Background (input): slightly lighter than primary
+      - Text (primary): #f0f0f0 (near white)
+      - Text (secondary): #a0a0a0 (muted gray)
+      - Accent (CTA buttons): #6366f1 (indigo) or brand color
+      - Persona colors: Ada #22c55e (green), Grace #eab308 (yellow), Tony #ec4899 (pink), Val #ef4444 (red)
+      - Error: #ef4444 (red)
+      - Warning: #f59e0b (amber/orange)
+      - Success: #22c55e (green)
+    </color_palette>
+    <typography>
+      - Font: Inter or system font stack (-apple-system, BlinkMacSystemFont, etc.)
+      - Message text: 14-15px
+      - Headers: 16-20px, semibold
+      - Code blocks: JetBrains Mono or Fira Code (monospace)
+    </typography>
+    <visual_details>
+      - Rounded corners on message bubbles, cards, inputs (border-radius: 8-12px)
+      - Subtle borders/dividers between sidebar and content
+      - Persona messages have colored left border (3-4px) matching persona color
+      - Persona avatars are colored circles with initials (e.g., green circle with "A" for Ada)
+      - Typing indicator: animated dots (...) with subtle bounce animation
+      - Avatar pulse/glow effect while AI is responding
+      - Code blocks: dark theme (GitHub Dark or Dracula), with copy button in top-right
+    </visual_details>
+  </design_system>
+
+  <implementation_steps>
+    <step number="1">
+      <title>Infrastructure</title>
+      <tasks>
+        - Initialize Next.js project with App Router and TypeScript
+        - Configure Tailwind CSS with dark theme
+        - Set up PostgreSQL + Prisma ORM with schema
+        - Run initial migrations
+        - Create /api/health endpoint with DB status
+        - Set up project directory structure (components/, app/, lib/)
+      </tasks>
+    </step>
+    <step number="2">
+      <title>Landing Page</title>
+      <tasks>
+        - Build Hero section with headline, subtitle, CTA
+        - Build "How It Works" section
+        - Build "Meet Your Team" persona cards
+        - Build Pricing section
+        - Build Footer
+        - Make fully responsive
+      </tasks>
+    </step>
+    <step number="3">
+      <title>Authentication</title>
+      <tasks>
+        - Build magic link request form (/login)
+        - Implement POST /api/auth/magic-link (generate token, send email)
+        - Implement GET /api/auth/verify (validate token, create session)
+        - Build session management (cookie-based, 30-day rolling)
+        - Implement GET /api/auth/me and POST /api/auth/logout
+        - Add auth middleware to protect /app/* routes
+        - Auth loading states
+      </tasks>
+    </step>
+    <step number="4">
+      <title>Onboarding</title>
+      <tasks>
+        - Build onboarding page with company name + description inputs
+        - Implement POST /api/towers (create tower + 6 default channels)
+        - Build Welcome modal with persona introductions
+        - Redirect to /app/general after onboarding
+      </tasks>
+    </step>
+    <step number="5">
+      <title>Core Chat UI</title>
+      <tasks>
+        - Build sidebar with channel list
+        - Build channel header
+        - Build message list (scrollable, auto-scroll to bottom)
+        - Build message input bar (Enter to send, Shift+Enter for newline)
+        - Style user vs AI messages (color-coded borders, persona avatars)
+        - Implement channel URL routing (/app/[channel])
+        - Build empty states for each channel
+        - Mobile responsive sidebar (hamburger menu, overlay)
+      </tasks>
+    </step>
+    <step number="6">
+      <title>Messaging & OpenClaw Integration</title>
+      <tasks>
+        - Implement POST /api/channels/:slug/messages
+        - Integrate OpenClaw Gateway HTTP calls
+        - Build typing indicator ("[Persona] is typing..." with animated dots)
+        - Build avatar pulse/glow effect
+        - Implement message pagination (GET with offset/limit)
+        - Build "Load more" button
+        - Implement DELETE /api/messages/:id (own messages only)
+        - Store and display Markdown + code blocks
+      </tasks>
+    </step>
+    <step number="7">
+      <title>Settings</title>
+      <tasks>
+        - Build Settings page layout (Profile, Company, Account sections)
+        - Implement profile editing (display name, avatar initials)
+        - Implement company editing (name, context)
+        - Implement sign out
+        - Implement account deletion with "DELETE" confirmation
+        - Implement data export (ZIP download)
+      </tasks>
+    </step>
+    <step number="8">
+      <title>Polish & Edge Cases</title>
+      <tasks>
+        - Dynamic browser tab titles (#channel | TowerHQ)
+        - Background tab notification indicator (●)
+        - Quick channel switcher (Ctrl/Cmd+K modal)
+        - Keyboard shortcuts (Enter, Shift+Enter, Escape)
+        - Error handling (timeout, slow response, API errors, network disconnect)
+        - Reconnection banner with auto-retry
+        - Copy button on code blocks
+        - Message copy functionality
+        - Loading states and spinners
+        - Final responsive polish
+      </tasks>
+    </step>
+  </implementation_steps>
+
+  <success_criteria>
+    <functionality>
+      - Magic link authentication works end-to-end
+      - Onboarding creates tower with 6 channels
+      - All 6 channels are visible, switchable, and have correct URLs
+      - Sending a message calls OpenClaw and displays AI response with correct persona
+      - Typing indicator shows while waiting for response
+      - Messages persist across page refresh and sessions
+      - Settings (profile, company, sign out, delete) all work
+      - Landing page has clear CTA and professional presentation
+    </functionality>
+    <user_experience>
+      - Feels like a real product, not a prototype
+      - Polished enough to demo to investors and onboard real beta users
+      - Fast and responsive — no janky interactions
+      - Works on mobile (collapsible sidebar, full-width chat)
+      - Intuitive for anyone who has used Discord or Slack
+    </user_experience>
+    <technical_quality>
+      - Real PostgreSQL database with Prisma ORM (no mock data)
+      - Data persists across server restarts
+      - Proper error handling for all API calls
+      - Session management with 30-day rolling tokens
+      - Clean code structure following Next.js App Router conventions
+    </technical_quality>
+    <design_polish>
+      - Clean, dark, professional UI (Discord-inspired)
+      - Persona messages are visually distinct with color-coded borders
+      - No placeholder text, broken layouts, or missing states
+      - Empty states guide users on what to do
+      - Smooth typing indicator and loading states
+    </design_polish>
+  </success_criteria>
+
+  <v2_features_not_in_mvp>
+    - Multi-persona debates (multiple personas responding to one message)
+    - @mention to force specific persona
+    - Message search across channels
+    - Light mode toggle
+    - Notification sounds
+    - Custom channels
+    - Avatar upload (MVP uses auto-generated initials)
+    - Streaming responses (word-by-word via SSE/WebSocket)
+    - Bookmark/star messages
+    - AI-suggested decision logging
+    - Card-style decision entries
+    - Channel history clearing
+    - Team/multi-user towers
+    - Offline message queue
+    - Native mobile apps
+    - Push notifications
+  </v2_features_not_in_mvp>
+</project_specification>

@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String    @id @default(uuid()) @db.Uuid
+  email       String    @unique
+  displayName String?   @map("display_name")
+  avatarUrl   String?   @map("avatar_url")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  sessions   Session[]
+  magicLinks MagicLink[]
+  tower      Tower?
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@map("sessions")
+}
+
+model MagicLink {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  email     String
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([email])
+  @@map("magic_links")
+}
+
+model Tower {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @unique @map("user_id") @db.Uuid
+  companyName    String   @map("company_name")
+  companyContext String?  @map("company_context")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channels Channel[]
+
+  @@map("towers")
+}
+
+model Channel {
+  id                 String   @id @default(uuid()) @db.Uuid
+  towerId            String   @map("tower_id") @db.Uuid
+  name               String
+  slug               String
+  isDecisionsChannel Boolean  @default(false) @map("is_decisions_channel")
+  sortOrder          Int      @map("sort_order")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  tower    Tower     @relation(fields: [towerId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@unique([towerId, slug])
+  @@map("channels")
+}
+
+model Message {
+  id        String   @id @default(uuid()) @db.Uuid
+  channelId String   @map("channel_id") @db.Uuid
+  role      String   // "user" | "assistant"
+  persona   String?  // "ada" | "grace" | "tony" | "val" — null for user messages
+  content   String
+  metadata  Json?    @db.JsonB
+  createdAt DateTime @default(now()) @map("created_at")
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([channelId, createdAt(sort: Desc)])
+  @@map("messages")
+}
