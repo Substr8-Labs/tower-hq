@@ -134,3 +134,62 @@ code {
 .typing-dot:nth-child(1) { animation-delay: 0s; }
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Product Tour Styles (Driver.js) */
+.tower-tour-popover {
+  background: #1f2937 !important;
+  color: #f3f4f6 !important;
+  border: 1px solid #374151 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.tower-tour-popover .driver-popover-title {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: #fff !important;
+}
+
+.tower-tour-popover .driver-popover-description {
+  color: #9ca3af !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.tower-tour-popover .driver-popover-progress-text {
+  color: #6b7280 !important;
+}
+
+.tower-tour-popover button {
+  background: #4f46e5 !important;
+  color: white !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: background 0.2s !important;
+}
+
+.tower-tour-popover button:hover {
+  background: #4338ca !important;
+}
+
+.tower-tour-popover .driver-popover-prev-btn {
+  background: #374151 !important;
+}
+
+.tower-tour-popover .driver-popover-prev-btn:hover {
+  background: #4b5563 !important;
+}
+
+/* Pulsing highlight for tour elements */
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+}
+
+.tour-highlight {
+  animation: pulse-ring 2s infinite;
+}

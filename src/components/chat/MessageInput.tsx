@@ -34,7 +34,7 @@ export function MessageInput({ onSend, disabled, placeholder = "Type a message..
   };
 
   return (
-    <div className="px-4 pb-6 pt-2">
+    <div id="message-input" className="px-4 pb-6 pt-2">
       <div className="bg-discord-input rounded-lg flex items-end">
         {/* Plus button */}
         <button className="p-3 text-discord-text-muted hover:text-discord-text transition-colors">

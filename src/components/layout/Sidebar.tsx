@@ -29,7 +29,7 @@ export function Sidebar({ companyName = "My Company", onClose }: SidebarProps) {
       </div>
 
       {/* Channels */}
-      <nav className="flex-1 overflow-y-auto pt-4 px-2">
+      <nav id="sidebar-channels" className="flex-1 overflow-y-auto pt-4 px-2">
         <div className="text-xs font-semibold text-discord-text-muted uppercase tracking-wide px-2 mb-1 flex items-center justify-between">
           <span>Channels</span>
           <button className="hover:text-discord-text">+</button>
@@ -37,6 +37,7 @@ export function Sidebar({ companyName = "My Company", onClose }: SidebarProps) {
         {channels.map((channel) => (
           <Link
             key={channel.slug}
+            id={`channel-${channel.slug}`}
             href={`/app/${channel.slug}`}
             onClick={onClose}
             className={`group flex items-center gap-1.5 px-2 py-1.5 mx-0 rounded transition-colors ${
