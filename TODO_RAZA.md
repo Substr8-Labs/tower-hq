@@ -1,5 +1,7 @@
 # TowerHQ Setup — Raza's Action Items
 
+**Status:** Auth system complete ✅ | Ready for production deploy
+
 When you're back at your desk, run through these:
 
 ## 1. Database (Neon) — 2 min
@@ -30,7 +32,19 @@ This makes the OpenClaw gateway publicly accessible so Vercel can reach it.
   ```
 - [ ] Deploy
 
-## 4. Run Database Migration — 1 min
+## 4. Email Service (Resend) — 3 min
+For magic links to actually send emails:
+- [ ] Go to https://resend.com
+- [ ] Create account, verify domain (substr8labs.com)
+- [ ] Get API key
+- [ ] Add to Vercel env vars:
+  ```
+  EMAIL_SERVICE_API_KEY=re_xxx...
+  EMAIL_FROM=noreply@substr8labs.com
+  ```
+*(Skip for now — dev mode logs magic links to console)*
+
+## 5. Run Database Migration — 1 min
 After deploy, in your terminal:
 ```bash
 cd tower-hq

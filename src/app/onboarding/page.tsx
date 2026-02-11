@@ -16,11 +16,21 @@ export default function OnboardingPage() {
     
     setLoading(true);
     try {
-      // TODO: Call API to create tower
-      // For now, just proceed to welcome
+      const res = await fetch('/api/towers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyName, companyContext }),
+      });
+      
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to create tower');
+      }
+      
       setStep("welcome");
     } catch (err) {
       console.error("Failed to create tower:", err);
+      // TODO: Show error toast
     } finally {
       setLoading(false);
     }
