@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Create magic link token
-    const token = createMagicLink(email.toLowerCase());
+    // Create magic link token (stored in database)
+    const token = await createMagicLink(email.toLowerCase());
     const magicUrl = `${APP_URL}/api/auth/verify?token=${token}`;
     
     // Send email (or log in development)
