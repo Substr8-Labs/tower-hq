@@ -205,6 +205,11 @@ You are NOT here to give business advice — that's what the exec team is for.`,
  * Get the persona for a given channel
  */
 export function getPersonaForChannel(channel: string): PersonaAgent {
+  // Welcome channel defaults to Ada
+  if (channel === 'welcome') {
+    return PERSONA_AGENTS.ada;
+  }
+  
   for (const persona of Object.values(PERSONA_AGENTS)) {
     if (persona.channels.includes(channel)) {
       return persona;

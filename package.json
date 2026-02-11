@@ -15,6 +15,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
     "@prisma/client": "^5.22.0",
     "archiver": "^7.0.0",
     "driver.js": "^1.4.0",
