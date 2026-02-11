@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { MessageList, MessageInput, EmptyState, type MessageData } from "@/components/chat";
 
 const channelConfig: Record<string, { name: string; description: string; persona?: string }> = {
+  welcome: { name: "welcome", description: "Your executive team is here", persona: "ada" },
   general: { name: "general", description: "General strategic discussion" },
   engineering: { name: "engineering", description: "Technical architecture & code", persona: "ada" },
   product: { name: "product", description: "Product strategy & roadmap", persona: "grace" },

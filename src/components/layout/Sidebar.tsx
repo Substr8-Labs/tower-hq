@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const channels = [
+  { slug: "welcome", icon: "👋", label: "welcome" },
   { slug: "general", icon: "#", label: "general" },
   { slug: "engineering", icon: "#", label: "engineering", persona: "Ada" },
   { slug: "product", icon: "#", label: "product", persona: "Grace" },
